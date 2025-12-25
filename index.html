@@ -25,15 +25,34 @@
         body {
             font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
         }
+        /* Animation for Music Bar */
+        @keyframes sound {
+            0% { height: 3px; }
+            50% { height: 12px; }
+            100% { height: 3px; }
+        }
+        .music-bar {
+            width: 3px;
+            background-color: white;
+            animation: sound 0s linear infinite;
+            border-radius: 2px;
+        }
+        .music-playing .music-bar {
+            animation-duration: 0.8s;
+        }
+        .music-bar:nth-child(1) { animation-delay: 0.2s; }
+        .music-bar:nth-child(2) { animation-delay: 0.4s; }
+        .music-bar:nth-child(3) { animation-delay: 0.1s; }
+        .music-bar:nth-child(4) { animation-delay: 0.3s; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
-        // --- Lucide Icons Components (Implemented as SVGs for standalone usage) ---
+        // --- Lucide Icons Components ---
         const Icon = ({ children, size = 24, className = "" }) => (
             <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
                 {children}
@@ -53,6 +72,8 @@
         const Tag = (props) => <Icon {...props}><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l5 5a2 2 0 0 0 2.828 0l7.172-7.172a2 2 0 0 0 0-2.828l-5-5z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></Icon>;
         const Video = (props) => <Icon {...props}><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2" ry="2"/></Icon>;
         const ExternalLink = (props) => <Icon {...props}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></Icon>;
+        const Music = (props) => <Icon {...props}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></Icon>;
+        const VolumeX = (props) => <Icon {...props}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" x2="17" y1="9" y2="15"/><line x1="17" x2="23" y1="9" y2="15"/></Icon>;
 
         // --- Data ---
         const initialPlans = [
@@ -162,8 +183,58 @@
 
         const categories = ["全部", "體能活動", "認知訓練", "社交互動", "音樂律動", "團體互動"];
 
+        // --- Background Music Component ---
+        const BackgroundMusic = ({ isPlaying }) => {
+            if (!isPlaying) return null;
+            
+            return (
+                <div className="fixed bottom-0 right-0 w-1 h-1 opacity-0 pointer-events-none overflow-hidden">
+                    <iframe 
+                        width="560" 
+                        height="315" 
+                        src="https://www.youtube.com/embed/1xYyi_yRImQ?autoplay=1&loop=1&playlist=1xYyi_yRImQ&controls=0&enablejsapi=1" 
+                        title="Background Music" 
+                        frameBorder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowFullScreen
+                    ></iframe>
+                </div>
+            );
+        };
+
+        // --- Welcome Screen Component ---
+        const WelcomeScreen = ({ onStart }) => {
+            return (
+                <div className="fixed inset-0 bg-teal-800 z-50 flex flex-col items-center justify-center text-white p-4">
+                    <div className="max-w-md w-full text-center space-y-8 animate-in fade-in zoom-in duration-500">
+                        <div className="bg-white/10 p-6 rounded-full inline-block mb-4">
+                            <BookOpen size={64} className="text-yellow-300" />
+                        </div>
+                        <h1 className="text-4xl font-bold tracking-wider">日照教案資料庫</h1>
+                        <p className="text-teal-100 text-lg">
+                            整合認知、體能與社交互動的活動資源<br/>
+                            伴隨輕鬆的爵士樂，開始愉快的一天
+                        </p>
+                        
+                        <button 
+                            onClick={onStart}
+                            className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-teal-800 transition-all duration-200 bg-yellow-400 font-lg rounded-full hover:bg-yellow-300 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-yellow-400/50 shadow-lg"
+                        >
+                            <span className="mr-2">進入系統</span>
+                            <Music size={20} className="animate-bounce" />
+                        </button>
+                    </div>
+                    <div className="absolute bottom-6 text-teal-300/60 text-sm">
+                        點擊按鈕後將自動播放背景音樂
+                    </div>
+                </div>
+            );
+        };
+
         // --- Main App Component ---
         const LessonPlanApp = () => {
+            const [hasStarted, setHasStarted] = useState(false);
+            const [isMusicPlaying, setIsMusicPlaying] = useState(false);
             const [plans, setPlans] = useState(initialPlans);
             const [filter, setFilter] = useState("全部");
             const [searchTerm, setSearchTerm] = useState("");
@@ -175,6 +246,15 @@
             const [formData, setFormData] = useState({
                 title: "", category: "體能活動", duration: "", intensity: "低", tags: "", equipment: "", videoUrl: "", goals: "", steps: ""
             });
+
+            const handleStart = () => {
+                setHasStarted(true);
+                setIsMusicPlaying(true);
+            };
+
+            const toggleMusic = () => {
+                setIsMusicPlaying(!isMusicPlaying);
+            };
 
             const filteredPlans = plans.filter(plan => {
                 const matchesCategory = filter === "全部" || plan.category === filter;
@@ -237,8 +317,15 @@
                 }
             };
 
+            if (!hasStarted) {
+                return <WelcomeScreen onStart={handleStart} />;
+            }
+
             return (
                 <div className="min-h-screen bg-gray-50 text-gray-800 font-sans pb-10">
+                {/* Background Music Player (Hidden) */}
+                <BackgroundMusic isPlaying={isMusicPlaying} />
+
                 {/* Header */}
                 <header className="bg-teal-600 text-white p-4 shadow-md sticky top-0 z-10">
                     <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
@@ -247,22 +334,40 @@
                         <h1 className="text-2xl font-bold tracking-wide">日照教案資料庫</h1>
                     </div>
                     
-                    <div className="flex w-full md:w-auto gap-2">
+                    <div className="flex w-full md:w-auto gap-3 items-center">
                         <div className="relative flex-grow md:w-64">
-                        <input
-                            type="text"
-                            placeholder="搜尋教案..."
-                            className="w-full pl-10 pr-4 py-2 rounded-full text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-300"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                        <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+                            <input
+                                type="text"
+                                placeholder="搜尋教案..."
+                                className="w-full pl-10 pr-4 py-2 rounded-full text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-300"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
                         </div>
+                        
                         <button 
-                        onClick={handleAddNewClick}
-                        className="bg-yellow-400 hover:bg-yellow-500 text-teal-900 px-4 py-2 rounded-full font-bold flex items-center gap-1 transition-colors shadow-sm whitespace-nowrap"
+                            onClick={handleAddNewClick}
+                            className="bg-yellow-400 hover:bg-yellow-500 text-teal-900 px-4 py-2 rounded-full font-bold flex items-center gap-1 transition-colors shadow-sm whitespace-nowrap"
                         >
-                        <Plus size={20} /> 新增
+                            <Plus size={20} /> <span className="hidden sm:inline">新增</span>
+                        </button>
+
+                        <button
+                            onClick={toggleMusic}
+                            className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors ${isMusicPlaying ? 'bg-teal-700 text-white music-playing' : 'bg-teal-800 text-gray-400'}`}
+                            title={isMusicPlaying ? "暫停音樂" : "播放音樂"}
+                        >
+                            {isMusicPlaying ? (
+                                <div className="flex gap-0.5 items-end h-4 pb-1">
+                                    <div className="music-bar"></div>
+                                    <div className="music-bar"></div>
+                                    <div className="music-bar"></div>
+                                    <div className="music-bar"></div>
+                                </div>
+                            ) : (
+                                <VolumeX size={20} />
+                            )}
                         </button>
                     </div>
                     </div>

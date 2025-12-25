@@ -1,0 +1,559 @@
+import React, { useState } from 'react';
+import { Plus, Search, Clock, Activity, Users, BookOpen, X, Edit2, Trash2, Save, Tag, Video, ExternalLink } from 'lucide-react';
+
+// 初始教案資料
+const initialPlans = [
+  {
+    id: 1,
+    title: "水果敲敲樂",
+    category: "認知訓練",
+    duration: "40分鐘",
+    intensity: "低",
+    tags: ["聽覺專注", "反應力", "手眼協調"],
+    equipment: "各種水果圖卡(或塑膠水果)、充氣軟槌(或是報紙棒)、水果名稱籤筒",
+    videoUrl: "https://youtu.be/HiMgMJauNDM?si=wUrQs73yJrrQJKPc",
+    goals: "透過聽覺指令與動作配合，訓練長輩的專注力與反應速度，並透過水果主題引發生活共鳴。",
+    steps: [
+      "1. 暖身(5分)：帶領長輩認識桌上的水果圖卡，請大家唸出名字，確認大家都看得到、聽得懂。",
+      "2. 初階(10分)：每人分配一張圖卡。帶領者喊「蘋果」，拿蘋果的長輩用軟槌輕敲桌面一下。",
+      "3. 進階(15分)：帶領者不喊名字，改喊「特徵」。例如「紅色的水果」、「有籽的水果」，符合條件的都要敲。",
+      "4. 團體戰(10分)：大家一起打節拍，聽到指定水果(如：香蕉)時，要改成拍手，其餘水果維持敲桌子。",
+    ]
+  },
+  {
+    id: 5,
+    title: "物換星移",
+    category: "團體互動",
+    duration: "45分鐘",
+    intensity: "中",
+    tags: ["團隊合作", "手部抓握", "節奏感"],
+    equipment: "紙杯或豆袋(每人一個)、桌子、節奏清楚的音樂",
+    videoUrl: "https://youtu.be/f1VuW6gQDHc?si=raAevm6BsLKTKVTw",
+    goals: "訓練長輩的團體默契與節奏感，透過物品傳遞增加社交互動與手部抓握控制。",
+    steps: [
+      "1. 建立默契：長輩圍坐桌邊，每人面前一個紙杯。先練習「拿起來、放下去」的口令。",
+      "2. 傳遞練習：口令調整為「拿起來、傳給右邊」。剛開始不放音樂，慢慢傳。",
+      "3. 音樂挑戰：播放慢板音樂，配合節拍傳杯子。若有人堆積了兩個杯子，大家暫停幫忙化解，強調互助。",
+      "4. 進階變化：加入「敲兩下」再傳，或是「往左傳」的逆向操作，訓練大腦靈活性。"
+    ]
+  },
+  {
+    id: 6,
+    title: "手腦並用 - 腦力激盪",
+    category: "認知訓練",
+    duration: "50分鐘",
+    intensity: "低",
+    tags: ["雙重任務", "手指靈活", "大腦活化"],
+    equipment: "無須器材 (或準備號碼牌)",
+    videoUrl: "https://youtu.be/gyF3CfX9QHk?si=sgorRiHD--dU4Kv2",
+    goals: "透過雙手執行不同動作（Dual-task），刺激左右腦連結，預防認知退化。",
+    steps: [
+      "1. 暖身手指操：雙手握拳、張開，手腕轉動，放鬆上肢肌肉。",
+      "2. 不對稱挑戰：左手比「讚」，右手比「OK」。聽口令同時交換（左手變OK，右手變讚）。",
+      "3. 數字手指操：一手比1，一手比2，同時數數並交換手勢。這對長輩很有挑戰性，做錯了笑一笑也很好。",
+      "4. 顏色反應：帶領者舉紅牌拍手，舉藍牌拍大腿，訓練視覺與動作的轉換。"
+    ]
+  },
+  {
+    id: 7,
+    title: "We No Speak Americano 手指操",
+    category: "體能活動",
+    duration: "30分鐘",
+    intensity: "中",
+    tags: ["精細動作", "音樂律動", "預防失智"],
+    equipment: "椅子、音樂播放器",
+    videoUrl: "https://youtu.be/5QXmDs--ncU?si=x_lq0PTk9dct1fpV",
+    goals: "利用快節奏音樂帶動手指運動，特別加強「石頭在內、紙在外」的協調訓練。",
+    steps: [
+      "1. 基礎動作：雙手甩一甩，接著雙手互握、手指交叉伸展。",
+      "2. 核心口訣：教導長輩「石頭在內(手心)、紙在外(手背)」。一手握拳(石頭)放在胸前，一手張開(紙)往前伸。",
+      "3. 交換練習：聽口令交換動作。初期速度慢，熟悉後加快。",
+      "4. 音樂跟練：播放《We No Speak Americano》，跟著音樂節奏進行「石頭/紙」的快速切換，最後加上比讚的手勢結尾。"
+    ]
+  },
+  {
+    id: 8,
+    title: "等無人~笑我是憨人 (音樂律動)",
+    category: "音樂律動",
+    duration: "40分鐘",
+    intensity: "中",
+    tags: ["懷舊音樂", "上肢伸展", "心情愉悅"],
+    equipment: "椅子、絲巾(選用)、音樂播放器",
+    videoUrl: "https://youtu.be/5XJ46jUMp0Q?si=7S3rzECxnFm0821r",
+    goals: "結合長輩熟悉的台語金曲，設計簡單的坐姿舞蹈，達到全身活動與心情放鬆的效果。",
+    steps: [
+      "1. 歌曲賞析：先播放音樂，大家一起哼唱《等無人》，喚起回憶。",
+      "2. 分解動作：設計簡單舞步，例如「擦窗戶」(手往兩邊揮)、「切西瓜」(手上下擺動)、「踏步」。",
+      "3. 隨樂起舞：播放音樂，帶領者在前方示範，長輩坐在椅子上跟著跳。強調動作大一點，把筋骨拉開。",
+      "4. 緩和收操：音樂結束後，做深呼吸調節心肺功能。"
+    ]
+  },
+  {
+    id: 2,
+    title: "記憶傳球 - 報水果名",
+    category: "社交互動",
+    duration: "45分鐘",
+    intensity: "中",
+    tags: ["記憶力", "團體互動", "上肢運動"],
+    equipment: "軟球1-2顆、椅子圍成圓圈",
+    videoUrl: "",
+    goals: "結合上肢拋接運動與短期記憶訓練，增加團體間的互動樂趣。",
+    steps: [
+      "1. 建立代號：每位長輩為自己取一個水果代號(如：我是鳳梨)。",
+      "2. 記憶測試：帶領者隨機問「鳳梨是誰？」，確認大家都記住彼此代號。",
+      "3. 傳球任務：丟球給別人時，必須大聲喊出對方的水果名。",
+      "4. 變化題：隨著熟悉度增加，可以增加球的數量，或改為分享旅遊地點。",
+    ]
+  }
+];
+
+const categories = ["全部", "體能活動", "認知訓練", "社交互動", "音樂律動", "團體互動"];
+
+const LessonPlanApp = () => {
+  const [plans, setPlans] = useState(initialPlans);
+  const [filter, setFilter] = useState("全部");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+
+  // 用於新增/編輯的暫存狀態
+  const [formData, setFormData] = useState({
+    title: "", category: "體能活動", duration: "", intensity: "低", tags: "", equipment: "", videoUrl: "", goals: "", steps: ""
+  });
+
+  const filteredPlans = plans.filter(plan => {
+    const matchesCategory = filter === "全部" || plan.category === filter;
+    const matchesSearch = plan.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          plan.tags.some(tag => tag.includes(searchTerm));
+    return matchesCategory && matchesSearch;
+  });
+
+  const handleDelete = (id) => {
+    if (window.confirm("確定要刪除這個教案嗎？")) {
+      setPlans(plans.filter(p => p.id !== id));
+      setSelectedPlan(null);
+    }
+  };
+
+  const handleEditClick = (plan) => {
+    setFormData({
+      ...plan,
+      tags: plan.tags.join(", "),
+      steps: plan.steps.join("\n"),
+      videoUrl: plan.videoUrl || ""
+    });
+    setIsEditing(true);
+    setShowForm(true);
+  };
+
+  const handleAddNewClick = () => {
+    setFormData({
+      title: "", category: "體能活動", duration: "40分鐘", intensity: "低", tags: "", equipment: "", videoUrl: "", goals: "", steps: ""
+    });
+    setIsEditing(false);
+    setShowForm(true);
+  };
+
+  const handleSave = () => {
+    const newPlan = {
+      ...formData,
+      id: isEditing ? formData.id : Date.now(),
+      tags: formData.tags.split(/[,，、]/).map(t => t.trim()).filter(t => t),
+      steps: formData.steps.split("\n").filter(s => s.trim())
+    };
+
+    if (isEditing) {
+      setPlans(plans.map(p => p.id === newPlan.id ? newPlan : p));
+    } else {
+      setPlans([newPlan, ...plans]);
+    }
+    setShowForm(false);
+    setSelectedPlan(newPlan);
+  };
+
+  const getCategoryColor = (category) => {
+    switch(category) {
+      case '體能活動': return 'bg-orange-400';
+      case '認知訓練': return 'bg-blue-400';
+      case '社交互動': return 'bg-pink-400';
+      case '音樂律動': return 'bg-purple-400';
+      case '團體互動': return 'bg-green-400';
+      default: return 'bg-teal-400';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
+      {/* Header */}
+      <header className="bg-teal-600 text-white p-4 shadow-md sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-2">
+            <BookOpen size={28} />
+            <h1 className="text-2xl font-bold tracking-wide">日照教案資料庫</h1>
+          </div>
+          
+          <div className="flex w-full md:w-auto gap-2">
+            <div className="relative flex-grow md:w-64">
+              <input
+                type="text"
+                placeholder="搜尋教案..."
+                className="w-full pl-10 pr-4 py-2 rounded-full text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-300"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+            </div>
+            <button 
+              onClick={handleAddNewClick}
+              className="bg-yellow-400 hover:bg-yellow-500 text-teal-900 px-4 py-2 rounded-full font-bold flex items-center gap-1 transition-colors shadow-sm"
+            >
+              <Plus size={20} /> 新增
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto p-4 md:p-6">
+        
+        {/* Filter Tabs */}
+        <div className="flex overflow-x-auto gap-2 mb-6 pb-2 no-scrollbar">
+          {categories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setFilter(cat)}
+              className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
+                filter === cat 
+                  ? "bg-teal-600 text-white font-medium shadow-md" 
+                  : "bg-white text-gray-600 hover:bg-teal-50 border border-gray-200"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Grid Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredPlans.map(plan => (
+            <div 
+              key={plan.id} 
+              onClick={() => setSelectedPlan(plan)}
+              className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer border border-gray-100 overflow-hidden flex flex-col group"
+            >
+              <div className={`h-2 w-full ${getCategoryColor(plan.category)}`} />
+              
+              <div className="p-5 flex-grow">
+                <div className="flex justify-between items-start mb-2">
+                  <span className={`text-xs font-bold px-2 py-1 rounded text-white ${getCategoryColor(plan.category)}`}>
+                    {plan.category}
+                  </span>
+                  <span className="text-gray-400 text-xs flex items-center gap-1">
+                    <Clock size={12} /> {plan.duration}
+                  </span>
+                </div>
+                
+                <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-teal-600 transition-colors">
+                  {plan.title}
+                </h3>
+                
+                <p className="text-gray-500 text-sm line-clamp-2 mb-4">
+                  {plan.goals}
+                </p>
+
+                <div className="flex justify-between items-center mt-auto">
+                  <div className="flex flex-wrap gap-1">
+                    {plan.tags.slice(0, 2).map(tag => (
+                      <span key={tag} className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-md">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                  {plan.videoUrl && (
+                    <Video size={16} className="text-red-500" />
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filteredPlans.length === 0 && (
+          <div className="text-center py-20 text-gray-400">
+            <p className="text-lg">沒有找到符合條件的教案</p>
+            <p className="text-sm">試試看切換分類或搜尋其他關鍵字</p>
+          </div>
+        )}
+      </main>
+
+      {/* Plan Detail Modal */}
+      {selectedPlan && !showForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="sticky top-0 bg-white p-5 border-b border-gray-100 flex justify-between items-center z-10">
+              <h2 className="text-2xl font-bold text-teal-800 flex items-center gap-2">
+                {selectedPlan.title}
+              </h2>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => handleEditClick(selectedPlan)}
+                  className="p-2 text-gray-500 hover:text-teal-600 hover:bg-teal-50 rounded-full transition-colors"
+                  title="編輯"
+                >
+                  <Edit2 size={20} />
+                </button>
+                <button 
+                  onClick={() => handleDelete(selectedPlan.id)}
+                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                  title="刪除"
+                >
+                  <Trash2 size={20} />
+                </button>
+                <button 
+                  onClick={() => setSelectedPlan(null)}
+                  className="p-2 text-gray-400 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 md:p-8 space-y-6">
+              
+              {/* Video Link Button */}
+              {selectedPlan.videoUrl && (
+                <a 
+                  href={selectedPlan.videoUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full bg-red-50 text-red-600 py-3 rounded-xl border border-red-100 hover:bg-red-100 transition-colors font-medium mb-4"
+                >
+                  <Video size={20} />
+                  觀看教學影片 (YouTube)
+                  <ExternalLink size={16} />
+                </a>
+              )}
+
+              {/* Meta Info Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                <div className="flex flex-col">
+                  <span className="text-xs text-gray-500 mb-1">分類</span>
+                  <span className="font-medium text-gray-800">{selectedPlan.category}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs text-gray-500 mb-1">時間</span>
+                  <span className="font-medium text-gray-800 flex items-center gap-1">
+                    <Clock size={16} className="text-teal-500"/> {selectedPlan.duration}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs text-gray-500 mb-1">強度</span>
+                  <span className="font-medium text-gray-800 flex items-center gap-1">
+                    <Activity size={16} className="text-orange-500"/> {selectedPlan.intensity}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs text-gray-500 mb-1">標籤</span>
+                  <div className="flex flex-wrap gap-1">
+                    {selectedPlan.tags.map(tag => (
+                      <span key={tag} className="text-xs bg-white border border-gray-200 px-1 rounded">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Sections */}
+              <div>
+                <h3 className="flex items-center gap-2 text-lg font-bold text-teal-700 mb-2">
+                  <BookOpen size={20} /> 活動目標
+                </h3>
+                <p className="text-gray-700 leading-relaxed bg-teal-50/50 p-4 rounded-lg">
+                  {selectedPlan.goals}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="flex items-center gap-2 text-lg font-bold text-teal-700 mb-2">
+                  <Tag size={20} /> 準備器材
+                </h3>
+                <p className="text-gray-700 leading-relaxed bg-orange-50/50 p-4 rounded-lg border-l-4 border-orange-300">
+                  {selectedPlan.equipment}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="flex items-center gap-2 text-lg font-bold text-teal-700 mb-3">
+                  <Users size={20} /> 活動流程
+                </h3>
+                <div className="space-y-3">
+                  {selectedPlan.steps.map((step, idx) => (
+                    <div key={idx} className="flex gap-3 items-start">
+                       <div className="min-w-[24px] h-6 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs font-bold mt-0.5">
+                         {idx + 1}
+                       </div>
+                       <p className="text-gray-700 whitespace-pre-wrap">{step}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-5 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
+              <button 
+                onClick={() => setSelectedPlan(null)}
+                className="w-full bg-teal-600 text-white py-3 rounded-lg font-bold hover:bg-teal-700 transition-colors"
+              >
+                關閉視窗
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit/Add Form Modal */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="sticky top-0 bg-white p-5 border-b border-gray-100 flex justify-between items-center z-10">
+              <h2 className="text-xl font-bold text-gray-800">
+                {isEditing ? "編輯教案" : "新增教案"}
+              </h2>
+              <button 
+                onClick={() => setShowForm(false)}
+                className="text-gray-400 hover:text-gray-800"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">教案名稱</label>
+                <input 
+                  type="text" 
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  placeholder="例如：水果敲敲樂"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">教學影片連結 (YouTube)</label>
+                <div className="relative">
+                  <input 
+                    type="text" 
+                    className="w-full border border-gray-300 rounded-lg p-2 pl-10"
+                    value={formData.videoUrl}
+                    onChange={(e) => setFormData({...formData, videoUrl: e.target.value})}
+                    placeholder="https://youtube.com/..."
+                  />
+                  <Video className="absolute left-3 top-2.5 text-gray-400" size={18} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">分類</label>
+                  <select 
+                    className="w-full border border-gray-300 rounded-lg p-2 bg-white"
+                    value={formData.category}
+                    onChange={(e) => setFormData({...formData, category: e.target.value})}
+                  >
+                    {categories.filter(c => c !== "全部").map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">時間長度</label>
+                  <input 
+                    type="text" 
+                    className="w-full border border-gray-300 rounded-lg p-2"
+                    value={formData.duration}
+                    onChange={(e) => setFormData({...formData, duration: e.target.value})}
+                    placeholder="例如：40分鐘"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">強度</label>
+                  <select 
+                    className="w-full border border-gray-300 rounded-lg p-2 bg-white"
+                    value={formData.intensity}
+                    onChange={(e) => setFormData({...formData, intensity: e.target.value})}
+                  >
+                    <option value="低">低</option>
+                    <option value="中">中</option>
+                    <option value="高">高</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">器材 (用逗號分隔)</label>
+                <textarea 
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  rows="2"
+                  value={formData.equipment}
+                  onChange={(e) => setFormData({...formData, equipment: e.target.value})}
+                  placeholder="例如：圖卡, 軟槌, 音樂"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">活動目標</label>
+                <textarea 
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  rows="3"
+                  value={formData.goals}
+                  onChange={(e) => setFormData({...formData, goals: e.target.value})}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">活動流程 (每一行代表一個步驟)</label>
+                <textarea 
+                  className="w-full border border-gray-300 rounded-lg p-2 font-mono text-sm bg-gray-50"
+                  rows="6"
+                  value={formData.steps}
+                  onChange={(e) => setFormData({...formData, steps: e.target.value})}
+                  placeholder="1. 暖身...&#10;2. 主活動..."
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">標籤 (用逗號分隔)</label>
+                <input 
+                  type="text" 
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  value={formData.tags}
+                  onChange={(e) => setFormData({...formData, tags: e.target.value})}
+                  placeholder="例如：認知, 專注力, 團體"
+                />
+              </div>
+            </div>
+
+            <div className="p-5 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex gap-3 justify-end">
+              <button 
+                onClick={() => setShowForm(false)}
+                className="px-6 py-2 rounded-lg font-medium text-gray-600 hover:bg-gray-200 transition-colors"
+              >
+                取消
+              </button>
+              <button 
+                onClick={handleSave}
+                className="px-6 py-2 rounded-lg font-medium bg-teal-600 text-white hover:bg-teal-700 shadow-md flex items-center gap-2"
+              >
+                <Save size={18} /> 儲存教案
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+};
+
+export default LessonPlanApp;

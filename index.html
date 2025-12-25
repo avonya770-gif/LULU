@@ -183,6 +183,15 @@
 
         const categories = ["全部", "體能活動", "認知訓練", "社交互動", "音樂律動", "團體互動"];
 
+        // --- Helper Function for YouTube ID ---
+        const getVideoId = (url) => {
+            if (!url) return null;
+            // Handle various YouTube URL formats
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        };
+
         // --- Background Music Component ---
         const BackgroundMusic = ({ isPlaying }) => {
             if (!isPlaying) return null;
@@ -482,18 +491,34 @@
 
                         <div className="p-6 md:p-8 space-y-6 overflow-y-auto">
                         
-                        {/* Video Link Button */}
+                        {/* Video Player */}
                         {selectedPlan.videoUrl && (
-                            <a 
-                            href={selectedPlan.videoUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 w-full bg-red-50 text-red-600 py-3 rounded-xl border border-red-100 hover:bg-red-100 transition-colors font-medium mb-4 shadow-sm"
-                            >
-                            <Video size={20} />
-                            觀看教學影片 (YouTube)
-                            <ExternalLink size={16} />
-                            </a>
+                            <div className="mb-6">
+                                <h3 className="flex items-center gap-2 text-lg font-bold text-teal-700 mb-2">
+                                    <Video size={20} /> 教學影片
+                                </h3>
+                                <div className="relative w-full pt-[56.25%] bg-gray-100 rounded-xl overflow-hidden shadow-sm border border-gray-200">
+                                    {getVideoId(selectedPlan.videoUrl) ? (
+                                        <iframe 
+                                            className="absolute top-0 left-0 w-full h-full"
+                                            src={`https://www.youtube.com/embed/${getVideoId(selectedPlan.videoUrl)}`}
+                                            title="YouTube video player"
+                                            frameBorder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        ></iframe>
+                                    ) : (
+                                        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center text-gray-400">
+                                            <div className="text-center">
+                                                <p>影片連結格式無法辨識</p>
+                                                <a href={selectedPlan.videoUrl} target="_blank" rel="noopener noreferrer" className="text-teal-600 underline mt-2 block">
+                                                    點此直接開啟連結
+                                                </a>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         )}
 
                         {/* Meta Info Grid */}
